@@ -1,0 +1,4 @@
+requests==2.7.0
+beautifulsoup4==4.3.2
+configobj==5.0.6
+youtube_dl==2015.05.20

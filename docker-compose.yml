@@ -1,0 +1,13 @@
+test:
+    build: .
+    command: nosetests --with-coverage --cover-package=bsAbstimmungen
+    volumes:
+        - ./:/src/
+    working_dir: /src/
+
+build:
+    build: .
+    command: python setup.py sdist
+    volumes:
+        - ./:/src/
+    working_dir: /src/

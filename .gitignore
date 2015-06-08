@@ -1,0 +1,8 @@
+/dist/
+/pyseries.egg-info/
+/.coverage
+/tests/examples/HouseOfCards/*.mp4
+/info.log
+__pycache__
+*.pyc
+*.part
