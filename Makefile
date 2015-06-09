@@ -11,11 +11,10 @@ within_docker = docker run --rm -it --name pyseries -u user -v $(shell pwd):/src
 release:
 	@echo "Is everything commited? Are you ready to release? Press any key to continue - abort with Ctrl+C"
 	@read x
-	$(within_docker) bumpversion --message "Release version {current_version}" release
-	$(within_docker) python setup.py sdist bdist_wheel
-	$(within_docker) bumpversion --message "Preparing next version {new_version}" --no-tag patch
-	@echo Don't forget to push the tags!
-
+	@$(within_docker) bumpversion --message "Release version {current_version}" release
+	@$(within_docker) python setup.py sdist bdist_wheel
+	@$(within_docker) bumpversion --message "Preparing next version {new_version}" --no-tag patch
+	@echo "Don't forget to push the tags!"
 
 .PHONY: dev
 dev:
