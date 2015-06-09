@@ -47,6 +47,7 @@ def pushd(newDir):
 
 
 def main():
+    logger.info('Using pyseries v{0}'.format(__version__))
     download(os.getcwd())
 
 
@@ -229,6 +230,8 @@ def unwrap(url):
 
 
 def download(working_dir):
+    logger.info('Working directory is {0}'.format(os.getcwd()))
+
     # For each file in the root directory
     for value in os.listdir(working_dir):
         #  If the current file is a directory and contains a file called
