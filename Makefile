@@ -11,9 +11,9 @@ within_docker = docker run --rm -it --name pyseries -u user -v $(shell pwd):/src
 release:
 	@echo "Is everything commited? Are you ready to release? Press any key to continue - abort with Ctrl+C"
 	@read x
-	# $(within_docker) bumpversion release
+	$(within_docker) bumpversion release
 	$(within_docker) python setup.py sdist bdist_wheel
-	# $(within_docker) bumpversion --no-tag patch
+	$(within_docker) bumpversion --no-tag patch
 	@echo Don't forget to push the tags!
 
 
