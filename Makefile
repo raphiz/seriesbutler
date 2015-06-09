@@ -5,6 +5,7 @@ default: buildimage dev
 buildimage:
 	docker build -t raphiz/pyseries ./
 
+# This is an alias for the dev container...
 within_docker = docker run --rm -it --name pyseries -u user -v $(shell pwd):/src/ -e "GIT_AUTHOR_NAME=$(shell git config user.name)" -e "GIT_COMMITTER_NAME=$(shell git config user.name)" -e "EMAIL=$(shell git config user.email)" raphiz/pyseries
 
 .PHONY: release
@@ -18,7 +19,8 @@ release:
 
 .PHONY: dev
 dev:
-	$(within_docker) bash
+	@$(within_docker) bash
 
+.PHONY: integration
 integration:
-	docker run --rm -it -v $(shell pwd):/src/:ro -w /src python:3.4 bash
+	@docker run --rm -it -v $(shell pwd):/src/:ro -w /src python:3.4 bash
