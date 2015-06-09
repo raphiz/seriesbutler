@@ -55,7 +55,9 @@ def is_valid_config(path):
     if config.get('imdb') is None:
         return False
     if config.get('imdb')[:2] != 'tt':
-        logger.warn('Please add the tt prefix from the imdb link in %s!', path)
+        logger.warn(
+            'Please add the tt prefix from the imdb link in {0}!'.format(path)
+        )
         return False
     return True
 
@@ -66,20 +68,19 @@ def fetch_url(imdb_id):
     }
 
     r = requests.get(
-        '%s/suggest-movie/?tv=all&term=%s' %
-        (base, imdb_id[2:]),
+        '{0}/suggest-movie/?tv=all&term={1}'.format(base, imdb_id[2:]),
         headers=headers
-        )
+    )
 
     if r.status_code != 200:
-        logger.error("Status code %s!", r.status_code, r.url)
+        logger.error("Status code {0} ({1})!".format(r.status_code, url))
         return None
 
     result = r.json()
     if len(result) != 1:
         logger.error(
-            "Recieved an unexpected amount of results: %s",
-            len(result)
+            "Recieved an unexpected amount of results: {0}"
+            .format(len(result))
         )
         return None
     return base + result[0]['url']
@@ -88,7 +89,7 @@ def fetch_url(imdb_id):
 def scrape_episodes(url):
     r = requests.get(url)
     if r.status_code != 200:
-        logger.error("Status code %s (%s)!", r.status_code, url)
+        logger.error("Status code {0} ({1})!".format(r.status_code, url))
         return None
 
     soup = BeautifulSoup(r.text)
@@ -138,18 +139,17 @@ def remove_unwanted(details, config, path, ignore_fs=False):
                     from_season = season
                     from_episode = episode
                     logger.info(
-                        "Starting from season %s episode %s (from FS) - %s",
-                        from_season,
-                        from_episode,
-                        config.get('imdb')
+                        "Starting from season {0} episode {1} (from FS) - {2}"
+                        .format(from_season, from_episode, config.get('imdb'))
                     )
 
     for (season_no, season) in copy.copy(details).items():
         if season_no < from_season:
             logger.info(
-                "Skipping season %s for series %s",
-                season_no,
-                config.get('imdb')
+                "Skipping season {0} for series {1}".format(
+                    season_no,
+                    config.get('imdb')
+                )
             )
             del details[season_no]
             continue
@@ -157,10 +157,11 @@ def remove_unwanted(details, config, path, ignore_fs=False):
             if episode_no < from_episode and \
                from_season == season_no:
                 logger.info(
-                    "Skipping episode s%se%s for series %s",
-                    season_no,
-                    episode_no,
-                    config.get('imdb')
+                    "Skipping episode s{0}e{1} for series {2}".format(
+                        season_no,
+                        episode_no,
+                        config.get('imdb')
+                    )
                 )
                 del season['episodes'][episode_no]
                 continue
@@ -174,14 +175,14 @@ def download_episodes(details, target_dir):
             download_link(
                 episode['link'],
                 target_dir,
-                's%se%s' % (season_no, episode_no)
+                's{0}e{1}'.format(season_no, episode_no)
             )
 
 
 def download_link(url, target_dir, name):
     r = requests.get(url)
     if r.status_code != 200:
-        logger.error("Status code %s (%s)!", r.status_code, url)
+        logger.error("Status code {0} ({1})!".format(r.status_code, url))
         return None
 
     soup = BeautifulSoup(r.text)
@@ -192,14 +193,14 @@ def download_link(url, target_dir, name):
             if not elm.has_attr('id'):
                 continue
             direct = convert(unwrap(
-                'http://solarmovie.is/link/play/%s/' % elm['id'][5:]
+                'http://solarmovie.is/link/play/{0}/'.format(elm['id'][5:])
             ))
             try:
                 ydl_opts = {
                     'format': 'bestaudio/best',
                     'outtmpl': name + '.%(ext)s'
                 }
-                logger.info("Downloading from ... %s", direct)
+                logger.info("Downloading from ... {0}".format(direct))
 
                 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([direct])
@@ -207,18 +208,20 @@ def download_link(url, target_dir, name):
             except Exception as e:
                 if 'embed' in direct:
                     logger.warn(
-                        'Link %s might be embedded - special treatment?',
-                        direct
+                        'Link {0} might be embedded - special treatment?'
+                        .format(direct)
                     )
                 else:
-                    logger.info('Failed to download from link %s', direct)
-    logger.error('No links found for %s', name)
+                    logger.info(
+                        'Failed to download from link {0}'.format(direct)
+                    )
+    logger.error('No links found for {0}'.format(name))
 
 
 def unwrap(url):
     r = requests.get(url)
     if r.status_code != 200:
-        logger.error("Status code %s (%s)!", r.status_code, url)
+        logger.error("Status code {0} ({1})!".format(r.status_code, url))
         return None
     soup = BeautifulSoup(r.text)
     return soup.select('iframe')[0]['src']
@@ -235,8 +238,7 @@ def download(working_dir):
            os.path.isfile(config_file) and \
            is_valid_config(config_file):
             logger.info(
-                'Investigating into folder "%s"...',
-                value
+                'Investigating into folder "{0}"...'.format(value)
             )
 
             config = ConfigObj(config_file)
@@ -250,8 +252,8 @@ def download(working_dir):
             download_episodes(details, path)
         else:
             logger.info(
-                'Skipping folder "%s" - does not contain a info.ini',
-                value
+                'Skipping folder "{0}" - does not contain a info.ini'
+                .format(value)
             )
 
 setup_logging()

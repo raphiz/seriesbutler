@@ -1,3 +1,4 @@
+/build/
 /dist/
 /pyseries.egg-info/
 /.coverage
@@ -6,3 +7,5 @@
 __pycache__
 *.pyc
 *.part
+/.bash_history
+/.python_history
