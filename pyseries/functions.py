@@ -76,7 +76,7 @@ def load_series(working_directory, link_providers, datasource):
         # Skip files and folders withou an info.ini file...
         if not (os.path.isdir(cfg.path) and os.path.isfile(cfg.ini_file)):
             logger.info(
-                'Skipping folder "{0}" - does not contain a info.ini'
+                'Skipping file/folder "{0}"'
                 .format(value)
             )
             continue
