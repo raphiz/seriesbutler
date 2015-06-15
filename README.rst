@@ -6,9 +6,8 @@ TODO: write usage...
 What's next
 ===========
 
-#. Accept a list of ignored hosters (by URL)
-#. Accept a list of prefered hosters (by URL) - these links are prefered
 #. Prefere links that have a good quality declared (eg. HD or 10/10 video)
+#. Rethink design -> Eventually use map/filter/sort methods for handling links
 
 Setup development environment
 ===============================

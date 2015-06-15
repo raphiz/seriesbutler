@@ -9,3 +9,5 @@ __pycache__
 *.part
 /.bash_history
 /.python_history
+/.cache/
+/.local/
