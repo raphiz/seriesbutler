@@ -8,7 +8,7 @@ import sys
 import os
 
 logger = logging.getLogger(__name__)
-
+__version__ = "0.0.2"
 
 def setup_logging(default_path='logging.json',
                   default_level=logging.INFO,
