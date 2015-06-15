@@ -5,7 +5,7 @@ TODO: write usage...
 
 What's next
 ===========
-
+#. Improve performance with the help of generators...
 #. Prefere links that have a good quality declared (eg. HD or 10/10 video)
 #. Rethink design -> Eventually use map/filter/sort methods for handling links
 

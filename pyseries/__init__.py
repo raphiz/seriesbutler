@@ -1,5 +1,5 @@
 from .functions import download, remove_ignored, load_series
-from .providers import Solarmovie
+from .providers import Solarmovie, WatchTvSeries
 from .datasources import TheTvDb
 import logging.config
 import logging
@@ -34,7 +34,7 @@ def setup_logging(default_path='logging.json',
 
 def main(working_directory):
     # Define, which link providers and datasources shall be used
-    link_providers = [Solarmovie()]
+    link_providers = [Solarmovie(), WatchTvSeries()]
     datasource = TheTvDb()
 
     for series in load_series(working_directory, link_providers, datasource):
@@ -47,7 +47,7 @@ def main(working_directory):
         for episode in episodes:
             # Try to download the links - they are already sorted
             for link in episode.links():
-                succeeded = download(link.direct(), working_directory,
+                succeeded = download(link.direct(), series.configuration.path,
                                      str(episode))
                 if succeeded:
                     logger.info("Downloaded episode {0}".format(episode))

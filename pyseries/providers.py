@@ -7,6 +7,41 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class WatchTvSeries(object):
+
+    base = 'http://watchseries.ag'
+
+    def links_for(self, episode):
+        name = episode.series.name.replace(' ', '_')
+        result = []
+
+        r = requests.get(
+            "{0}/episode/{1}_s{2}_e{3}.html".
+            format(self.base, name, episode.season_no, episode.episode_no))
+        if r.status_code != 200:
+            logger.warn("WatchTvSeries has no links for {0} ({1})!"
+                        .format(episode.series.name, episode))
+            return result
+
+        soup = BeautifulSoup(r.text)
+        for elm in soup.select('#lang_1 .myTable tr'):
+            link = self.base + list(elm.children)[1].a['href']
+            hoster = list(elm.children)[0].span.string.strip()
+            result.append(Link(link, hoster, self.unwrap))
+        return result
+
+    def unwrap(self, link):
+        r = requests.get(link)
+        if r.status_code != 200:
+            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+            return None
+
+        soup = BeautifulSoup(r.text)
+        direct = soup.select('.myButton')[0]['href']
+
+        return direct
+
+
 class Solarmovie(object):
 
     base = 'https://www.solarmovie.is'

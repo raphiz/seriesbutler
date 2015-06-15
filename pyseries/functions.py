@@ -9,7 +9,7 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 
-def download(direct, working_directory, filename):
+def download(direct, series_directory, filename):
     """
     Download the given url into a file called filename.ext where ext is the
     extension of the videos file format.
@@ -27,7 +27,7 @@ def download(direct, working_directory, filename):
             'format': 'bestaudio/best',
             'outtmpl': filename + '.%(ext)s'
         }
-        with pushd(working_directory):
+        with pushd(series_directory):
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([direct])
 
@@ -35,7 +35,7 @@ def download(direct, working_directory, filename):
 
     except Exception as e:
         logger.info(
-            'Failed to download from link {0}'.format(direct)
+            'Failed to download from link {0} - {1}'.format(direct, e)
         )
     return False
 
@@ -136,7 +136,7 @@ def _has_suitable_extractor(url):
     url. If so, returns true, otherwise false.
     The "generic" extractor is ingored.
     """
-    for extractor in youtube_dl.extractor.list_extractors(18):
+    for extractor in youtube_dl.list_extractors(18):
         if extractor.suitable(url):
             # Skip the generic downloader
             if(extractor.IE_NAME == 'generic'):

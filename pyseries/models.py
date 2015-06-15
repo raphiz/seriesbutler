@@ -1,3 +1,7 @@
+import logging
+logger = logging.getLogger(__name__)
+
+
 class Link(object):
 
     def __init__(self, url, hoster, unwrap):
@@ -62,11 +66,22 @@ class Episode(object):
         others = []
 
         for link in links:
-            if link.hoster in self.series.configuration.prefered_hosters:
+            if self.__in_hoster(link.hoster,
+               self.series.configuration.prefered_hosters):
                 prefered.append(link)
-            elif link.hoster not in self.series.configuration.ignored_hosters:
+                continue
+            if not self.__in_hoster(link.hoster,
+               self.series.configuration.ignored_hosters):
                 others.append(link)
+        logger.info("Found {0} prefered links for {1}"
+                    .format(len(prefered), self))
         return prefered + others
+
+    def __in_hoster(self, link_hoster, list):
+        for declared_hoster in list:
+            if link_hoster.startswith(declared_hoster):
+                return True
+        return False
 
     def __lt__(self, other):
         if self.season_no < other.season_no:
