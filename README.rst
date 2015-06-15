@@ -1,4 +1,4 @@
-Pyseries 0.0.2
+Pyseries 0.0.3
 ---------------
 
 TODO: write usage...
