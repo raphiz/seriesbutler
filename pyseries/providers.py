@@ -21,7 +21,8 @@ class Solarmovie(object):
             "{0}/{1}/season-{2}/episode-{3}/".
             format(self.base, name, episode.season_no, episode.episode_no))
         if r.status_code != 200:
-            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+            logger.warn("Solarmovie has no links for {0} ({1})!"
+                         .format(episode.series.name, episode))
             return result
 
         soup = BeautifulSoup(r.text)
