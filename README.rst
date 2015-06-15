@@ -49,7 +49,7 @@ Run the tests with the `nosetests` command line utility.
 
 For more details checkout the (`nose documentation <https://nose.readthedocs.org/en/latest/>`__)
 
-If you want to test the created wheel distribution, create the wheel in the dev environment first. After that,
+If you want to test the created wheel distribution, create the wheel in the dev environment first (`python setup.py sdist bdist_wheel`). After that,
 exit the dev container and run `make integration` in the project root.
 
 This will fire up a docker container based on the official python image with the workspace mounted
