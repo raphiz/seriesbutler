@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 from .models import Link
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Solarmovie(object):

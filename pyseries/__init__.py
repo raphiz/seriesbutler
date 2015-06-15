@@ -8,7 +8,7 @@ import sys
 import os
 
 logger = logging.getLogger(__name__)
-__version__ = "0.0.3"
+__version__ = "0.0.2"
 
 
 def setup_logging(default_path='logging.json',
@@ -52,9 +52,9 @@ def main(working_directory):
                 if succeeded:
                     logger.info("Downloaded episode {0}".format(episode))
                     break
-
-            if not succeeded:
-                logger.error("Failed to download episode {0}".format(episode))
+                else:
+                    logger.error("Failed to download episode {0}"
+                                 .format(episode))
 
 
 def cli():
@@ -65,9 +65,9 @@ def cli():
     # If a directory is given...
     if len(sys.argv) == 2:
         main(os.path.abspath(sys.argv[1]))
-
-    # Use CWD instead...
-    main(os.getcwd())
+    else:
+        # Use CWD instead...
+        main(os.getcwd())
 
 if __name__ == '__main__':
     cli()
