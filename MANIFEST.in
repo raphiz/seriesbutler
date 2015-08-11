@@ -1,5 +1,3 @@
-include logging.json
 include requirements.txt
 include requirements-dev.txt
 include README.rst
-include logging.json

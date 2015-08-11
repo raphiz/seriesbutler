@@ -11,25 +11,36 @@ logger = logging.getLogger(__name__)
 __version__ = "0.0.4"
 
 
-def setup_logging(default_path='logging.json',
-                  default_level=logging.INFO,
-                  env_key='LOG_CFG'):
+def setup_logging():
     """
         Setup logging configuration
     """
-    path = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            config = json.load(f)
-        logging.config.dictConfig(config)
-    else:
-        logging.basicConfig(level=default_level)
-
-    #  Mute requests
-    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.config.dictConfig(
+        {'version': 1,
+         'disable_existing_loggers': False,  # this fixes the problem
+         'formatters': {
+             'simple': {
+                 'format': '[%(asctime)s] [%(levelname)-7s]: %(message)s'
+             },
+         },
+         'handlers': {
+             'console': {
+                 'class': 'logging.StreamHandler',
+                 'formatter': 'simple',
+                 'stream': 'ext://sys.stdout'
+             },
+         },
+         'loggers': {
+             '': {
+                 'level': 'INFO',
+                 'handlers': ['console']
+             },
+             'requests': {
+                 'level': 'WARNING',
+                 'handlers': ['console']
+             }
+         }
+         })
 
 
 def main(working_directory):
@@ -65,7 +76,7 @@ def cli():
 
     # Print version
     if sys.argv[1] in ['-v', '--version']:
-        print('pyseries version {0}'.format(__version__))
+        logger.info('pyseries version {0}'.format(__version__))
         exit()
 
     # If a directory is given...
