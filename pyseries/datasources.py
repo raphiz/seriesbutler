@@ -53,11 +53,17 @@ class TheTvDb(object):
                 continue
 
             # Skip If not yet released...
-            first_aired = datetime.strptime(
-                xml_episode.find('FirstAired').text,
-                "%Y-%m-%d"
-            )
+            try:
+                first_aired = datetime.strptime(
+                    xml_episode.find('FirstAired').text,
+                    "%Y-%m-%d")
+            except TypeError:
+                logger.info('Skipping episode s{0}e{1} - has no FirstAired'
+                            'attribute'.format(season, episode))
+                continue
             if datetime.now() < first_aired:
+                logger.info('Skipping episode s{0}e{1} - is in the future'
+                            .format(season, episode))
                 continue
 
             episodes.append((season, episode))
