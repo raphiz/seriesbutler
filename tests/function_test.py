@@ -1,6 +1,5 @@
 from pyseries import functions
 import os
-from nose.tools import *
 from pyseries.providers import Solarmovie
 from pyseries.datasources import TheTvDb
 
@@ -8,8 +7,8 @@ from pyseries.datasources import TheTvDb
 def test_download_fn_works_for_valid_url():
     try:
         url = "https://www.youtube.com/watch?v=Th4saUa7Ecw"
-        assert_true(functions.download(url, 'tests', 'example'))
-        assert_true(os.path.exists('tests/example.m4a'))
+        assert functions.download(url, 'tests', 'example') is True
+        assert os.path.exists('tests/example.m4a') is True
     finally:
         if os.path.exists('tests/example.m4a'):
             os.unlink('tests/example.m4a')
@@ -17,7 +16,7 @@ def test_download_fn_works_for_valid_url():
 
 def test_download_fn_returns_false_for_valid_url():
     url = "https://example.com/stuff"
-    assert_false(functions.download(url, 'tests', 'example'))
+    assert functions.download(url, 'tests', 'example') is False
 
 
 def test_has_suitable_extractor():
@@ -25,9 +24,9 @@ def test_has_suitable_extractor():
     nonsense = "https://example.com/stuff"
     vodlocker = "http://vodlocker.com/v4y2drplpx6v"
 
-    assert_true(functions._has_suitable_extractor(youtube))
-    assert_true(functions._has_suitable_extractor(vodlocker))
-    assert_false(functions._has_suitable_extractor(nonsense))
+    assert functions._has_suitable_extractor(youtube) is True
+    assert functions._has_suitable_extractor(vodlocker) is True
+    assert functions._has_suitable_extractor(nonsense) is False
 
 
 def test_load_series_returns_correct_list_of_series():
@@ -38,11 +37,11 @@ def test_load_series_returns_correct_list_of_series():
         link_providers,
         datasource
     )
-    assert_equals(2, len(series))
+    assert 2 == len(series)
 
-    assert_equals("House of Cards (US)", series[0].name)
-    assert_equals("tt1856010", series[0].imdb_id)
+    assert "House of Cards (US)" == series[0].name
+    assert "tt1856010" == series[0].imdb_id
     # TODO: assert cfg
-    assert_equals("Breaking Bad", series[1].name)
-    assert_equals("tt0903747", series[1].imdb_id)
+    assert "Breaking Bad" == series[1].name
+    assert "tt0903747" == series[1].imdb_id
     # TODO: assert cfg
