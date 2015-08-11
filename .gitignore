@@ -11,3 +11,4 @@ __pycache__
 /.python_history
 /.cache/
 /.local/
+/venv/
