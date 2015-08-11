@@ -62,6 +62,12 @@ def cli():
     This method is called when running pyseries from the command line
     """
     setup_logging()
+
+    # Print version
+    if sys.argv[1] in ['-v', '--version']:
+        print('pyseries version {0}'.format(__version__))
+        exit()
+
     # If a directory is given...
     if len(sys.argv) == 2:
         main(os.path.abspath(sys.argv[1]))
