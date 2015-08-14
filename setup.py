@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyseries",
-    version="0.1.0-dev",
+    version="0.1.0",
     packages=['pyseries'],
     author="Raphael Zimmermann",
     author_email="dev@raphael.li",
