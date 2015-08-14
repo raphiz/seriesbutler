@@ -1,4 +1,4 @@
-# Pyseries 0.1.0
+# Pyseries 0.2.0-dev
 
 Download your favorite TV shows just by running one simple command.
 
