@@ -35,7 +35,7 @@ def release(push_tags=False):
         print("Release aborted...")
         exit()
 
-    run('bumpversion --message "Release version {current_version}" release')
+    run('bumpversion --message "Release version {new_version}" release')
     run('python setup.py sdist bdist_wheel')
     run('bumpversion --message "Preparing next version {new_version}" '
         '--no-tag minor')
