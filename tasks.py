@@ -13,10 +13,10 @@ def test():
 
 @task
 def clean():
-    run('find . -name *.pyc -delete')
-    run('find . -name *.pyo -delete')
+    run('find . -name *.pyc -not -path "./venv/*" -delete ')
+    run('find . -name *.pyo -not -path "./venv/*" -delete ')
     run('find . -name *~ -delete')
-    run('find . -name __pycache__ -delete')
+    run('find . -name __pycache__ -not -path "./venv/*" -delete')
     run('find . -name .coverage -delete')
     run('rm -rf dist/')
     run('rm -rf .cache/')
