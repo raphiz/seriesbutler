@@ -38,7 +38,7 @@ def release(push_tags=False):
     run('bumpversion --message "Release version {current_version}" release')
     run('python setup.py sdist bdist_wheel')
     run('bumpversion --message "Preparing next version {new_version}" '
-        '--no-tag patch')
+        '--no-tag minor')
 
     # Push tags if enabled
     if push_tags:
