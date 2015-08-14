@@ -40,7 +40,7 @@ The video files are downloaded using [youtube-dl](https://rg3.github.io/youtube-
 
 ## What's next
 
-* rename develompment version to x.x.x-dev
+* Don't look up imdb name on every check - store it in the info file
 * Support for more sites
 * Some refactorings since the last changes
 * Improve performance with the help of generators...
