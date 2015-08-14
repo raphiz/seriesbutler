@@ -31,6 +31,25 @@ class TheTvDb(object):
         self.cache[imdb_id] = {'name': names[0].text, 'seriesid': seriesid}
         return names[0].text
 
+    def find_by_name(self, name):
+        response = requests.get(self._format_url(
+            '{base}GetSeries.php?seriesname={name}', name=name))
+
+        if not response.ok:
+            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+
+        root = ElementTree.fromstring(response.content)
+        result = []
+        for series_elm in root.findall('./Series'):
+            series_name = series_elm.find('SeriesName')
+            series_imdbid = series_elm.find('IMDB_ID')
+            if series_name is not None and series_imdbid is not None:
+                result.append((
+                    series_name.text,
+                    series_imdbid.text
+                ))
+        return result
+
     def name_for_imdb_id(self, imdb_id):
         if imdb_id in self.cache.keys():
             return self.cache[imdb_id]['name']
@@ -58,12 +77,12 @@ class TheTvDb(object):
                     xml_episode.find('FirstAired').text,
                     "%Y-%m-%d")
             except TypeError:
-                logger.info('Skipping episode s{0}e{1} - has no FirstAired'
-                            'attribute'.format(season, episode))
+                logger.debug('Skipping episode s{0}e{1} - has no FirstAired'
+                             'attribute'.format(season, episode))
                 continue
             if datetime.now() < first_aired:
-                logger.info('Skipping episode s{0}e{1} - is in the future'
-                            .format(season, episode))
+                logger.debug('Skipping episode s{0}e{1} - is in the future'
+                             .format(season, episode))
                 continue
 
             episodes.append((season, episode))

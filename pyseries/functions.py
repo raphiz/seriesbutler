@@ -4,9 +4,77 @@ import re
 import youtube_dl
 from configobj import ConfigObj
 import logging
+import logging.config
 from contextlib import contextmanager
 
+
 logger = logging.getLogger(__name__)
+
+
+def setup_logging():
+    """
+        Setup logging configuration
+    """
+    logging.config.dictConfig(
+        {'version': 1,
+         'disable_existing_loggers': False,  # this fixes the problem
+         'formatters': {
+             'simple': {
+                 'format': '[%(asctime)s] [%(levelname)-7s]: %(message)s'
+             },
+         },
+         'handlers': {
+             'console': {
+                 'class': 'logging.StreamHandler',
+                 'formatter': 'simple',
+                 'stream': 'ext://sys.stdout'
+             },
+         },
+         'loggers': {
+             '': {
+                 'level': 'INFO',
+                 'handlers': ['console']
+             },
+             'requests': {
+                 'level': 'WARNING',
+                 'handlers': ['console']
+             }
+         }
+         })
+
+
+def main(working_directory, link_providers, datasource):
+    for series in load_series(working_directory, link_providers, datasource):
+
+        episodes = series.episodes()
+
+        # Remove the episodes that are ignored - or
+        episodes = remove_ignored(series, episodes)
+
+        for episode in episodes:
+            # Try to download the links - they are already sorted
+            for link in episode.links():
+                succeeded = download(link.direct(), series.configuration.path,
+                                     str(episode))
+                if succeeded:
+                    update_starting_from(episode)
+                    logger.info("Downloaded episode {0}".format(episode))
+                    break
+                else:
+                    logger.error("Failed to download episode {0}"
+                                 .format(episode))
+
+
+def update_starting_from(episode):
+    # Update models
+    episode.series.configuration.from_season = episode.season_no
+    episode.series.configuration.from_episode = episode.episode_no
+
+    # Update ini file
+    config = ConfigObj(episode.series.configuration.ini_file)
+    config['from_season'] = episode.season_no
+    config['from_episode'] = episode.episode_no
+    config.write()
 
 
 def download(direct, series_directory, filename):
@@ -42,7 +110,7 @@ def download(direct, series_directory, filename):
 
 def remove_ignored(series, episodes):
     from_episode = Episode(series, series.configuration.from_season,
-                           series.configuration.from_episode - 1)
+                           series.configuration.from_episode)
     return filter(lambda e: from_episode < e, episodes)
 
 
@@ -75,6 +143,8 @@ def load_series(working_directory, link_providers, datasource):
 
         # Skip files and folders withou an info.ini file...
         if not (os.path.isdir(cfg.path) and os.path.isfile(cfg.ini_file)):
+            if value == 'pyseries.ini':
+                continue
             logger.info(
                 'Skipping file/folder "{0}"'
                 .format(value)
@@ -117,13 +187,13 @@ def _start_from(path, config):
             continue
 
         season = int(match.group(1))
-        episode = int(match.group(2))+1
+        episode = int(match.group(2))
 
         if from_season < season \
            or (from_season == season and from_episode < episode):
             from_season = season
             from_episode = episode
-            logger.info(
+            logger.debug(
                 "Starting from season {0} episode {1} (from FS) - {2}"
                 .format(from_season, from_episode, config.get('imdb'))
             )

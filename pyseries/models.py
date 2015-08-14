@@ -104,7 +104,8 @@ class Episode(object):
             and self.episode_no is other.episode_no
 
     def __str__(self):
-        return 's{0}e{1}'.format(
+        return '{0} s{1}e{2}'.format(
+            self.series.name,
             self.season_no,
             self.episode_no
         )

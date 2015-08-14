@@ -20,7 +20,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'pyseries = pyseries:cli'
+            'pyseries = pyseries.cli:cli'
         ]},
     install_requires=open('./requirements.txt').read(),
     tests_require=open('./requirements-dev.txt').read(),
