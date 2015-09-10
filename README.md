@@ -1,4 +1,4 @@
-# Seriesbutler 0.2.0-dev
+# Seriesbutler 1.0.0-dev
 
 Download your favorite TV shows just by running one simple command.
 
