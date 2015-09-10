@@ -1,7 +1,7 @@
 # Seriesbutler 1.0.0-dev
 [![Build Status](https://travis-ci.org/raphiz/seriesbutler.svg)](https://travis-ci.org/raphiz/seriesbutler)
 [![Coverage Status](https://coveralls.io/repos/raphiz/seriesbutler/badge.svg?branch=master&service=github)](https://coveralls.io/github/raphiz/seriesbutler?branch=master)
-[![Dependency Status](https://www.versioneye.com/user/projects/55f17d1cd4d204001c00008c/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f17d1cd4d204001c00008c)
+[![Dependency Status](https://www.versioneye.com/user/projects/55f17d5ad4d2040019000060/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f17d5ad4d2040019000060)
 
 Download your favorite TV shows just by running one simple command.
 
