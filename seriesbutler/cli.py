@@ -1,7 +1,9 @@
 # coding: utf-8
 import click
+import logging
 from . import __version__ as version
 from . import functions as fn
+from .models import SeriesbutlerException
 from .providers import Solarmovie, WatchTvSeries
 from .datasources import TheTvDb
 
@@ -34,6 +36,9 @@ def cli(ctx, working_directory, log_level):
 @cli.command(name='list')
 def list_series():
     """List all series managed by seriesbutler"""
+    if len(configuration['series']) == 0:
+        click.echo('No series registered yet! Call "seriesbutler add" to '
+                   'register a new series.')
     for series in configuration['series']:
         click.echo(series['name'])
 
@@ -41,6 +46,12 @@ def list_series():
 @cli.command()
 def fetch():
     """Check for new episodes and download them"""
+
+    # This is a ugly workaround to log on an info level...
+    root_logger = logging.getLogger()
+    if root_logger.getEffectiveLevel() > logging.INFO:
+        root_logger.setLevel(logging.INFO)
+
     fn.fetch_all(configuration, link_providers, datasource)
 
 
@@ -48,7 +59,11 @@ def fetch():
 @click.pass_context
 def init(ctx):
     """Initializes a directory to work with seriesbutler"""
-    fn.init(ctx.meta['working_directory'])
+    try:
+        fn.init(ctx.meta['working_directory'])
+        click.echo("Directory initialized to work with seriesbutler")
+    except SeriesbutlerException as e:
+        raise click.ClickException(str(e))
 
 
 @cli.command()
