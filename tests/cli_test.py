@@ -32,17 +32,17 @@ def test_list_series(fakedir):
 
 
 # TODO
-def test_list_invalid_directory(tmpdir):
-    runner = CliRunner()
-    result = runner.invoke(cli.cli, ['list'])
-    print(result)
+# def test_list_invalid_directory(tmpdir):
+#     runner = CliRunner()
+#     result = runner.invoke(cli.cli, ['list'])
+#     print(result)
 
 
 # TODO
-def test_init_empty_directory(tmpdir):
-    runner = CliRunner()
-    result = runner.invoke(cli.cli, ['init'])
-    print(result)
+# def test_init_empty_directory(tmpdir):
+#     runner = CliRunner()
+#     result = runner.invoke(cli.cli, ['init'])
+#     print(result)
 
 
 @vcr.use_cassette()

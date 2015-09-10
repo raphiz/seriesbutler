@@ -1,39 +1,52 @@
-# seriesbutler 0.2.0-dev
+# Seriesbutler 0.2.0-dev
 
 Download your favorite TV shows just by running one simple command.
 
 ```bash
-seriesbutler path/to/videos/ fetch
+seriesbutler fetch
 ```
 
 ## Legal notice
 Downloading TV Series may not be legal in your country of residence - please check with your local laws before installing!
+The author of this software does not take ANY responsibility for what you do with it!
 
 ## Usage
-Before using seriesbutler you should create a new directory in which the series are managed.
+Before using Seriesbutler you should create a new directory in which the series are managed.
 
 ```bash
 mkdir series/
+cd series/
 ```
 
-Next, you can add new Series using the `add` command. Note that the add keyword is followed by the target directory. If this directory is not provided, the current working directory is used instead.
+We have to initialize the directory to make it work with Seriesbutler.
 
 ```bash
-seriesbutler series/ add
+seriesbutler init
 ```
 
-After adding the new series successfully, you can check for new episodes to download. This might take some time - the output will help you understand what's going on. Again: The add keyword is followed by the target directory. If this directory is not provided, the current working directory is used instead.
+Next, you can add new Series using the `add` command - this should be pretty straight-forward.
 
 ```bash
-seriesbutler series/ fetch
+seriesbutler add
 ```
 
-Here is a quick demo showing the basic usage of seriesbutler
-[![asciicast](https://asciinema.org/a/7q4uku4ws26r4m2dz1m26fhrg.png)](https://asciinema.org/a/7q4uku4ws26r4m2dz1m26fhrg)
+After adding the new series successfully, you can check for new episodes to download. This might take some time - the command line output will help you understand what's going on.
 
+```bash
+seriesbutler fetch
+```
+
+Here is a quick demo showing the basic usage of Seriesbutler
+[![asciicast](https://asciinema.org/a/e6661ede9noc0fjdjxi5qotxk.png)](https://asciinema.org/a/e6661ede9noc0fjdjxi5qotxk)
+
+For more information, checkout the usage information by calling
+
+```
+seriesbutler --help
+```
 
 ## Supported Sites
-seriesbutler fetches links from the following sites:
+Seriesbutler fetches links from the following sites:
 
 * [solarmovie.is](http://solarmovie.is)
 * [watchseries.ag](http://watchseries.ag)
@@ -42,8 +55,7 @@ The video files are downloaded using [youtube-dl](https://rg3.github.io/youtube-
 
 
 ## What's next
-
-* Refactor tests to make use of fixtures (combined with parameterized) 
-* Support for more sites
+* There are some TODOs in the code to be resolved
+* Support more sites
 * Prefere links that have a good quality declared (eg. HD or 10/10 video)
-* Improve performance with the help of generators...
+* Improve performance

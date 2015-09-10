@@ -68,6 +68,13 @@ def _get_config_path(working_directory):
 
 def init(working_directory):
     working_directory = _get_working_directory(working_directory)
+
+    if not os.path.isdir(working_directory):
+        raise SeriesbutlerException('"{0}" is not a directory!'.format(
+                                    working_directory))
+    if len(os.listdir(working_directory)) > 0:
+        raise SeriesbutlerException('"{0}" is not empty!'.format(
+                                    working_directory))
     config_path = _get_config_path(working_directory)
 
     configuration = {

@@ -6,9 +6,9 @@ import pytest
 import os
 
 
-def test_init():
-    # TODO! (also cli test!)
-    pass
+# def test_init():
+# TODO! (also cli test!)
+#   pass
 
 
 def test_load_configuration_invalid_cfg():
@@ -254,7 +254,7 @@ def test_fetch_series_happy_path(mocker, config, series):
     assert config['series'][0]['start_from']['season'] == 1
 
 
-# Tests for download
+# TODO Tests for download
 # Called with valid link (happy path)
 # Called with invalid link
 # Called with nonexisting dir

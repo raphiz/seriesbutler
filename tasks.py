@@ -12,8 +12,8 @@ def test(debug=False):
     if debug:
         flags = '-s -v'
 
-    run('py.test {0} --pep8 --cov=seriesbutler --cov-report=term-missing tests/'
-        .format(flags))
+    run('py.test {0} --pep8 --cov=seriesbutler --cov-report=term-missing'
+        'tests/'.format(flags))
 
 
 @task
