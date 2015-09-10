@@ -24,7 +24,7 @@ class WatchTvSeries(object):
                         .format(series['name'], season, episode))
             return result
 
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
         for element in soup.select('#lang_1 .myTable tr'):
             link = self.base + list(element.children)[1].a['href']
             hoster = list(element.children)[0].span.string.strip()
@@ -38,7 +38,7 @@ class WatchTvSeries(object):
                          .format(link))
             return None
 
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
         return soup.select('.myButton')[0]['href']
 
 
@@ -63,7 +63,7 @@ class Solarmovie(object):
                         .format(series['name'], season, episode))
             return result
 
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
         for elm in soup.select('.dataTable tbody tr'):
             # Skip promoted links
             if not elm.has_attr('id'):
@@ -80,7 +80,7 @@ class Solarmovie(object):
                          .format(link))
             return None
 
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
         direct = soup.select('iframe')[0]['src']
 
         # Special handling for embedded...
