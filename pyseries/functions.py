@@ -1,80 +1,159 @@
-from .models import Series, Configuration, Episode
 import os
-import re
+import json
+import shutil
 import youtube_dl
-from configobj import ConfigObj
 import logging
 import logging.config
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 from contextlib import contextmanager
-
+from .models import ConfigurationException, PyseriesException
+from .models import configuration_schema
 
 logger = logging.getLogger(__name__)
 
 
-def setup_logging():
-    """
-        Setup logging configuration
-    """
-    logging.config.dictConfig(
-        {'version': 1,
-         'disable_existing_loggers': False,  # this fixes the problem
-         'formatters': {
-             'simple': {
-                 'format': '[%(asctime)s] [%(levelname)-7s]: %(message)s'
-             },
-         },
-         'handlers': {
-             'console': {
-                 'class': 'logging.StreamHandler',
-                 'formatter': 'simple',
-                 'stream': 'ext://sys.stdout'
-             },
-         },
-         'loggers': {
-             '': {
-                 'level': 'INFO',
-                 'handlers': ['console']
-             },
-             'requests': {
-                 'level': 'WARNING',
-                 'handlers': ['console']
-             }
-         }
-         })
+def load_configuration(working_directory=None):
+    working_directory = _get_working_directory(working_directory)
+    config_path = _get_config_path(working_directory)
+
+    logger.info('Working directory is {0}'.format(working_directory))
+
+    try:
+        with open(config_path, 'r') as fp:
+            cfg = json.load(fp)
+            validate(cfg, configuration_schema)
+
+            cfg['working_directory'] = working_directory
+            cfg['config_path'] = config_path
+            return cfg
+    except ValidationError as e:
+        raise ConfigurationException(
+            '{0} -> {1}'.format('.'.join(str(i) for i in e.path), e.message))
+    except Exception as e:
+        raise e
 
 
-def main(working_directory, link_providers, datasource):
-    for series in load_series(working_directory, link_providers, datasource):
+def save_configuration(configuration):
+    copy = configuration.copy()
 
-        episodes = series.episodes()
+    if not ('working_directory' in configuration.keys() and
+            'config_path' in configuration.keys()):
+        raise ConfigurationException('Missing dynamic properties'
+                                     '(working_directory and/or config_path)')
+    # Clear temporary configuration
+    copy.pop('working_directory')
+    copy.pop('config_path')
 
-        # Remove the episodes that are ignored - or
-        episodes = remove_ignored(series, episodes)
+    # validate
+    try:
+        validate(copy, configuration_schema)
+    except ValidationError as e:
+        raise ConfigurationException(
+            '{0} -> {1}'.format('.'.join(str(i) for i in e.path), e.message))
 
-        for episode in episodes:
-            # Try to download the links - they are already sorted
-            for link in episode.links():
-                succeeded = download(link.direct(), series.configuration.path,
-                                     str(episode))
-                if succeeded:
-                    update_starting_from(episode)
-                    logger.info("Downloaded episode {0}".format(episode))
-                    break
-                else:
-                    logger.error("Failed to download episode {0}"
-                                 .format(episode))
+    with open(configuration['config_path'], 'w+') as fp:
+        json.dump(copy, fp, sort_keys=True, indent=4, separators=(',', ': '))
 
 
-def update_starting_from(episode):
-    # Update models
-    episode.series.configuration.from_season = episode.season_no
-    episode.series.configuration.from_episode = episode.episode_no
+def _get_working_directory(working_directory):
+    if working_directory is None:
+        return os.getcwd()
+    return os.path.abspath(working_directory)
 
-    # Update ini file
-    config = ConfigObj(episode.series.configuration.ini_file)
-    config['from_season'] = episode.season_no
-    config['from_episode'] = episode.episode_no
-    config.write()
+
+def _get_config_path(working_directory):
+    return os.path.join(working_directory, 'pyseries.json')
+
+
+def init(working_directory):
+    working_directory = _get_working_directory(working_directory)
+    config_path = _get_config_path(working_directory)
+
+    configuration = {
+        'working_directory': working_directory,
+        'config_path': config_path,
+        "hosters": {"ignored": [], "prefered": []},
+        'series': []
+    }
+
+    save_configuration(configuration)
+
+
+def remove_series(configuration, series_configuration):
+    if series_configuration not in configuration['series']:
+        raise PyseriesException('The given series is not registered in the '
+                                'given configuration!')
+
+    # Remove the directory that contains all series
+    series_directory = os.path.join(configuration['working_directory'],
+                                    series_configuration['name'])
+    if os.path.exists(series_directory):
+        shutil.rmtree(series_directory)
+
+    # Remove the entry from the configuration
+    configuration['series'].remove(series_configuration)
+    save_configuration(configuration)
+
+
+def add_series(configuration, series):
+    # Check if the given series is already registered
+    for existing in configuration['series']:
+        if existing['imdb'] == series['imdb']:
+            raise PyseriesException('Series with imdbid {0} is already '
+                                    'registered!'.format(series['imdb']))
+
+    # Add series to the configuration and save it
+    configuration['series'].append(series)
+    save_configuration(configuration)
+
+    # Create the directory to store the files in
+    dst = os.path.join(configuration['working_directory'], series['name'])
+    if not os.path.exists(dst):
+        os.mkdir(dst)
+    return series
+
+
+def fetch_all(configuration, link_providers, datasource):
+    for series in configuration['series']:
+        fetch_series(configuration, series, link_providers, datasource)
+
+
+def fetch_series(configuration, series, link_providers, datasource):
+    if series not in configuration['series']:
+        raise PyseriesException('The given series is not registered in the '
+                                'given configuration!')
+    episodes = datasource.episodes_for_series(series)
+
+    # Remove watched episodes
+    episodes = _remove_ignored(series, episodes)
+
+    succeeded = False
+    for episode in episodes:
+        # Try to download the links - they are already sorted
+        for link in _links_for_episode(episode, series, configuration,
+                                       link_providers):
+            succeeded = download(
+                link.direct(),
+                os.path.join(configuration['working_directory'],
+                             series['name']),
+                's{0}e{1}'.format(episode[0], episode[1]))
+            if succeeded:
+                # Update start from & save it
+                series['start_from']['season'] = episode[0]
+                series['start_from']['episode'] = episode[1]
+                save_configuration(configuration)
+
+                logger.info("Downloaded {0} s{1}e{2}".format(
+                    series['name'], episode[0], episode[1]))
+                break
+            else:
+                logger.error("Failed to download {0} s{1}e{2}".format(
+                    series['name'], episode[0], episode[1]))
+        if not succeeded:
+            logger.error("Could not download {0} s{1}e{2}. No working links "
+                         "found".format(
+                             series['name'], episode[0], episode[1]))
 
 
 def download(direct, series_directory, filename):
@@ -95,7 +174,7 @@ def download(direct, series_directory, filename):
             'format': 'bestaudio/best',
             'outtmpl': filename + '.%(ext)s'
         }
-        with pushd(series_directory):
+        with _pushd(series_directory):
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([direct])
 
@@ -108,96 +187,51 @@ def download(direct, series_directory, filename):
     return False
 
 
-def remove_ignored(series, episodes):
-    from_episode = Episode(series, series.configuration.from_season,
-                           series.configuration.from_episode)
-    return filter(lambda e: from_episode < e, episodes)
-
-
-def load_series(working_directory, link_providers, datasource):
+def _remove_ignored(series, episodes):
     """
-    Loads all series from the given working_directory and returns a list
-    containing valid series models.
+    Removes all episodes from the given episodes list that the user has
+    already watched
     """
-    logger.info('Working directory is {0}'.format(working_directory))
-    series = []
-    prefered_hosters = []
-    ignored_hosters = []
+    def fn(one, two):
+        if one[0] < two[0]:
+            return True
+        if one[0] == two[0] and one[1] < two[1]:
+            return True
+        return False
 
-    global_cfg_path = os.path.join(working_directory, 'pyseries.ini')
-    if os.path.exists(global_cfg_path):
-        global_cfg = ConfigObj(global_cfg_path, list_values=False)
-        if global_cfg.get('prefered_hosters'):
-            prefered_hosters = global_cfg.get('prefered_hosters').split(',')
-        if global_cfg.get('ignored_hosters'):
-            ignored_hosters = global_cfg.get('ignored_hosters').split(',')
+    from_episode = (series['start_from']['season'],
+                    series['start_from']['episode'])
+    return list(filter(lambda e: fn(from_episode, e), episodes))
 
-    # For each file in the root directory
-    for value in os.listdir(working_directory):
-        #  If the current file is a directory and contains a file called
-        # info.ini
 
-        cfg = Configuration()
-        cfg.path = os.path.join(working_directory, value)
-        cfg.ini_file = os.path.join(cfg.path, 'info.ini')
+def _links_for_episode(episode, series, configuration, link_providers):
+    # Fetch all links from the providers
+    links = []
+    for provider in link_providers:
+        links += provider.links_for(series, episode[0], episode[1])
 
-        # Skip files and folders withou an info.ini file...
-        if not (os.path.isdir(cfg.path) and os.path.isfile(cfg.ini_file)):
-            if value == 'pyseries.ini':
-                continue
-            logger.info(
-                'Skipping file/folder "{0}"'
-                .format(value)
-            )
+    #  Sort them so that the prefered ones are on top
+    prefered = []
+    others = []
+
+    for link in links:
+        if _in_hoster(link.hoster,
+           configuration['hosters']['prefered']):
+            prefered.append(link)
             continue
-
-        ini = ConfigObj(cfg.ini_file)
-
-        # Skip if the conifg is invalid...
-        if _is_valid_ini(ini, cfg.ini_file) is False:
-                continue
-
-        logger.info('Investigating into folder "{0}"...'.format(value))
-
-        imdb_id = ini.get('imdb')
-        cfg.from_season, cfg.from_episode = _start_from(cfg.path, ini)
-        cfg.prefered_hosters = prefered_hosters
-        cfg.ignored_hosters = ignored_hosters
-        cfg.link_providers = link_providers
-        cfg.datasource = datasource
-
-        name = datasource.name_for_imdb_id(imdb_id)
-        series.append(Series(name, imdb_id, cfg))
-
-    return series
+        if not _in_hoster(link.hoster,
+           configuration['hosters']['ignored']):
+            others.append(link)
+    logger.info("Found {0} prefered links for {1} s{2}e{3}"
+                .format(len(prefered), series['name'], episode[0], episode[1]))
+    return prefered + others
 
 
-def _start_from(path, config):
-    """
-    Returns a tuple from_season, from_episode - where to start to download
-    the episodes from. This is ether from the config or from a file within the
-    given path.
-    """
-    from_season = int(config.get('from_season') or 0)
-    from_episode = int(config.get('from_episode') or 0)
-
-    for filename in os.listdir(path):
-        match = re.fullmatch('s([0-9]*)e([0-9]*)\..*', filename)
-        if not match:
-            continue
-
-        season = int(match.group(1))
-        episode = int(match.group(2))
-
-        if from_season < season \
-           or (from_season == season and from_episode < episode):
-            from_season = season
-            from_episode = episode
-            logger.debug(
-                "Starting from season {0} episode {1} (from FS) - {2}"
-                .format(from_season, from_episode, config.get('imdb'))
-            )
-    return from_season, from_episode
+def _in_hoster(link_hoster, list):
+    for declared_hoster in list:
+        if link_hoster.startswith(declared_hoster):
+            return True
+    return False
 
 
 def _has_suitable_extractor(url):
@@ -215,20 +249,41 @@ def _has_suitable_extractor(url):
     return False
 
 
-def _is_valid_ini(config, path):
-    if config.get('imdb') is None:
-        return False
-    if config.get('imdb')[:2] != 'tt':
-        logger.warn(
-            'Please add the tt prefix from the imdb link in {0}!'.format(path)
-        )
-        return False
-    return True
-
-
 @contextmanager
-def pushd(newDir):
+def _pushd(newDir):
     previousDir = os.getcwd()
     os.chdir(newDir)
     yield
     os.chdir(previousDir)
+
+
+def _setup_logging(log_level):
+    """
+        Setup logging configuration
+    """
+    logging.config.dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'simple': {
+                'format': '[%(asctime)s] [%(levelname)-7s]: %(message)s'
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple',
+                'stream': 'ext://sys.stdout'
+            },
+        },
+        'loggers': {
+            '': {
+                'level': log_level,
+                'handlers': ['console']
+            },
+            'requests': {
+                'level': 'WARNING',
+                'handlers': ['console']
+            }
+        }
+    })

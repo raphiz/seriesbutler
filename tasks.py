@@ -7,8 +7,13 @@ from invoke.util import log
 
 
 @task
-def test():
-    run('py.test tests/ --pep8 --cov pyseries --cov-report term-missing')
+def test(debug=False):
+    flags = ''
+    if debug:
+        flags = '-s -v'
+
+    run('py.test {0} --pep8 --cov=pyseries --cov-report=term-missing tests/'
+        .format(flags))
 
 
 @task

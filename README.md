@@ -3,8 +3,11 @@
 Download your favorite TV shows just by running one simple command.
 
 ```bash
-pyseries path/to/videos/
+pyseries path/to/videos/ fetch
 ```
+
+## Legal notice
+Downloading TV Series may not be legal in your country of residence - please check with your local laws before installing!
 
 ## Usage
 Before using pyseries you should create a new directory in which the series are managed.
@@ -16,13 +19,13 @@ mkdir series/
 Next, you can add new Series using the `add` command. Note that the add keyword is followed by the target directory. If this directory is not provided, the current working directory is used instead.
 
 ```bash
-pyseries add series/
+pyseries series/ add
 ```
 
 After adding the new series successfully, you can check for new episodes to download. This might take some time - the output will help you understand what's going on. Again: The add keyword is followed by the target directory. If this directory is not provided, the current working directory is used instead.
 
 ```bash
-pyseries fetch seriess/
+pyseries series/ fetch
 ```
 
 Here is a quick demo showing the basic usage of pyseries
@@ -40,9 +43,7 @@ The video files are downloaded using [youtube-dl](https://rg3.github.io/youtube-
 
 ## What's next
 
-* Don't look up imdb name on every check - store it in the info file
+* Refactor tests to make use of fixtures (combined with parameterized) 
 * Support for more sites
-* Some refactorings since the last changes
-* Improve performance with the help of generators...
 * Prefere links that have a good quality declared (eg. HD or 10/10 video)
-* Rethink design -> Eventually use map/filter/sort methods for handling links
+* Improve performance with the help of generators...

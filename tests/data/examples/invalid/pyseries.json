@@ -1,0 +1,21 @@
+{
+    "hosters": {
+        "ignored": [
+            "played"
+        ],
+        "prefered": [
+            "vodlocker"
+        ]
+    },
+    "series": [
+        {
+            "imdb": "tt2467372",
+            "name": "Brooklyn Nine-Nine",
+            "start_from": {
+                "episode": 4,
+                "season": -1
+            },
+            "tvdb": "269586"
+        }
+    ]
+}

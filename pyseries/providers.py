@@ -11,72 +11,76 @@ class WatchTvSeries(object):
 
     base = 'http://watchseries.ag'
 
-    def links_for(self, episode):
-        name = episode.series.name.replace(' ', '_')
+    def links_for(self, series, season, episode):
         result = []
 
-        r = requests.get(
-            "{0}/episode/{1}_s{2}_e{3}.html".
-            format(self.base, name, episode.season_no, episode.episode_no))
-        if r.status_code != 200:
-            logger.warn("WatchTvSeries has no links for {0} ({1})!"
-                        .format(episode.series.name, episode))
+        name_in_url = series['name'].replace(' ', '_')
+        response = requests.get(
+            "{0}/episode/{1}_s{2}_e{3}.html"
+            .format(self.base, name_in_url, season, episode))
+
+        if not response.ok:
+            logger.warn("WatchTvSeries has no links for {0} s{1}e{2}!"
+                        .format(series['name'], season, episode))
             return result
 
-        soup = BeautifulSoup(r.text)
-        for elm in soup.select('#lang_1 .myTable tr'):
-            link = self.base + list(elm.children)[1].a['href']
-            hoster = list(elm.children)[0].span.string.strip()
+        soup = BeautifulSoup(response.text)
+        for element in soup.select('#lang_1 .myTable tr'):
+            link = self.base + list(element.children)[1].a['href']
+            hoster = list(element.children)[0].span.string.strip()
             result.append(Link(link, hoster, self.unwrap))
         return result
 
     def unwrap(self, link):
-        r = requests.get(link)
-        if r.status_code != 200:
-            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+        response = requests.get(link)
+        if not response.ok:
+            logger.error("Failed to unwrap link {0} (Server error)!"
+                         .format(link))
             return None
 
-        soup = BeautifulSoup(r.text)
-        direct = soup.select('.myButton')[0]['href']
-
-        return direct
+        soup = BeautifulSoup(response.text)
+        return soup.select('.myButton')[0]['href']
 
 
 class Solarmovie(object):
 
     base = 'https://www.solarmovie.is'
 
-    def links_for(self, episode):
-        name = self._uniqe_name(episode.series.imdb_id)
+    def links_for(self, series, season, episode):
         result = []
-        if not name:
+
+        # Fetch the name which is in the URL and abort if not found
+        name_in_url = self._uniqe_name(series['imdb'])
+        if not name_in_url:
             return result
 
-        r = requests.get(
-            "{0}/{1}/season-{2}/episode-{3}/".
-            format(self.base, name, episode.season_no, episode.episode_no))
-        if r.status_code != 200:
-            logger.warn("Solarmovie has no links for {0} ({1})!"
-                        .format(episode.series.name, episode))
+        response = requests.get(
+            "{0}{1}season-{2}/episode-{3}/".
+            format(self.base, name_in_url, season, episode))
+
+        if not response.ok:
+            logger.warn("Solarmovie has no links for {0} (s{1}e{2})!"
+                        .format(series['name'], season, episode))
             return result
 
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(response.text)
         for elm in soup.select('.dataTable tbody tr'):
             # Skip promoted links
             if not elm.has_attr('id'):
                 continue
-            link = 'http://solarmovie.is/link/play/{0}/'.format(elm['id'][5:])
+            link = '{0}/link/play/{1}/'.format(self.base, elm['id'][5:])
             hoster = elm.a.string.strip()
             result.append(Link(link, hoster, self.unwrap))
         return result
 
     def unwrap(self, link):
-        r = requests.get(link)
-        if r.status_code != 200:
-            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+        response = requests.get(link)
+        if not response.ok:
+            logger.error("Failed to unwrap link {0} (Server error)!"
+                         .format(link))
             return None
 
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(response.text)
         direct = soup.select('iframe')[0]['src']
 
         # Special handling for embedded...
@@ -88,25 +92,18 @@ class Solarmovie(object):
         return direct
 
     def _uniqe_name(self, imdb_id):
-        headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-
-        r = requests.get(
+        response = requests.get(
             '{0}/suggest-movie/?tv=all&term={1}'.
             format(self.base, imdb_id[2:]),
-            headers=headers
-        )
+            headers={'X-Requested-With': 'XMLHttpRequest'})
 
-        if r.status_code != 200:
-            logger.error("Status code {0} ({1})!".format(r.status_code, r.url))
+        if not response.ok:
+            logger.error("Failed to solarmovie url identifier (Server error)")
             return None
 
-        result = r.json()
+        result = response.json()
         if len(result) != 1:
             logger.error(
-                "Could not find seris with imdb_id %s: {0}"
-                .format(imdb_id)
-            )
+                "Could not find series {0} on solarmovie".format(imdb_id))
             return None
         return result[0]['url']

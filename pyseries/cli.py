@@ -1,8 +1,5 @@
 # coding: utf-8
 import click
-import os
-import shutil
-from configobj import ConfigObj
 from . import __version__ as version
 import pyseries.functions as fn
 from .providers import Solarmovie, WatchTvSeries
@@ -12,38 +9,60 @@ from .datasources import TheTvDb
 # Define, which link providers and datasources shall be used
 link_providers = [Solarmovie(), WatchTvSeries()]
 datasource = TheTvDb()
+configuration = None
 
 
 @click.group()
 @click.version_option(version)
-def cli():
+@click.option('-d', '--working-directory', type=click.Path(exists=True))
+@click.option('-v', '--log-level', type=click.Choice(
+              ['INFO', 'DEBUG', 'WARNING']), default='WARNING')
+@click.pass_context
+def cli(ctx, working_directory, log_level):
     """Download your favorite TV shows just by running one simple command"""
-    fn.setup_logging()
+    fn._setup_logging(log_level)
+    ctx.meta['working_directory'] = working_directory
+    if not ctx.invoked_subcommand == 'init':
+        global configuration
+        try:
+            configuration = fn.load_configuration(working_directory)
+        except FileNotFoundError:
+            raise click.ClickException('No configuration found! Please call'
+                                       ' "pyseries init" first!')
 
+
+@cli.command(name='list')
+def list_series():
+    """List all series managed by pyseries"""
+    for series in configuration['series']:
+        click.echo(series['name'])
 
 
 @cli.command()
-@click.argument('working_directory', required=False, type=click.Path(exists=True))
-def fetch(working_directory):
+def fetch():
     """Check for new episodes and download them"""
-    working_directory = _normalize_working_directory(working_directory)
-    fn.main(working_directory, link_providers, datasource)
+    fn.fetch_all(configuration, link_providers, datasource)
 
 
 @cli.command()
-@click.argument('working_directory', type=click.Path(exists=True))
-def remove(working_directory):
-    """Remove an existing series from pyseries"""
-    working_directory = _normalize_working_directory(working_directory)
-    series = fn.load_series(working_directory, link_providers, datasource)
+@click.pass_context
+def init(ctx):
+    """Initializes a directory to work with pyseries"""
+    fn.init(ctx.meta['working_directory'])
+
+
+@cli.command()
+def remove():
+    """Remove a managed series"""
+    series = configuration['series']
 
     if len(series) == 0:
-        click.echo('No Episodes to remove!')
+        click.echo('No series to remove!')
         return
 
-    click.echo("Which Series shall be removed?")
+    click.echo("Which series shall be removed?")
     for idx, current in enumerate(series):
-        click.echo("{0}. {1}".format(idx, current))
+        click.echo("{0}. {1}".format(idx, current['name']))
 
     while 1:
         value = click.prompt('Enter the number of the series to remove',
@@ -54,15 +73,14 @@ def remove(working_directory):
             click.echo('OOps, that\'s not a valid option. Choose a value '
                        'between 0 and {0}!'.format(len(series)-1))
 
-    shutil.rmtree(series[value].configuration.path)
-    click.echo('Series {0} removed!'.format(series[value]))
+    name = series[value]['name']
+    fn.remove_series(configuration, series[value])
+    click.echo('Series {0} removed!'.format(name))
 
 
 @cli.command()
-@click.argument('working_directory', type=click.Path(exists=True))
-def add(working_directory):
-    """Add a new series from pyseries"""
-    working_directory = _normalize_working_directory(working_directory)
+def add():
+    """Add a new series"""
     name = click.prompt('What\'s the title of the TV seris to add?')
     results = datasource.find_by_name(name)
     if len(results) == 0:
@@ -76,29 +94,22 @@ def add(working_directory):
         value = click.prompt('Enter the number of the series to add', type=int)
         if value >= 0 and value < len(results):
             break
-
     new_series = results[value]
-    ini = ConfigObj(os.path.join(working_directory, new_series[0], 'info.ini'))
-    ini['imdb'] = new_series[1]
-    ini['name'] = new_series[0]
+    imdb = new_series[1]
+    name = new_series[0]
+    from_season, from_episode = 0, 0
 
     if click.confirm('Have you seen some episodes already?'):
-        ini['from_season'] = click.prompt(
+        from_season = click.prompt(
             'The season of the last seen episode', type=int)
-        ini['from_episode'] = click.prompt(
+        from_episode = click.prompt(
             'The the last seen episode number', type=int)
 
-    os.mkdir(os.path.join(working_directory, new_series[0]))
-    ini.write()
+    new_series = {'name': name, 'imdb': imdb, 'start_from':
+                  {'season': from_season, 'episode': from_episode}}
+    series = fn.add_series(configuration, new_series)
 
-    click.echo("Added series {0}".format(new_series[0]))
-
-
-def _normalize_working_directory(working_directory):
-    if working_directory is None:
-        return os.getcwd()
-    else:
-        return os.path.abspath(working_directory)
+    click.echo("Added series {0}".format(series['name']))
 
 if __name__ == '__main__':
     cli()
