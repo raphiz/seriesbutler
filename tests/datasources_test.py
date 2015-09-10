@@ -1,6 +1,6 @@
-from pyseries import datasources
-from pyseries.datasources import TheTvDb
-from pyseries.models import DataSourceException
+from seriesbutler import datasources
+from seriesbutler.datasources import TheTvDb
+from seriesbutler.models import DataSourceException
 from unittest import mock
 import datetime
 from vcr import VCR

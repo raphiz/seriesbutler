@@ -7,7 +7,7 @@ import logging.config
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from contextlib import contextmanager
-from .models import ConfigurationException, PyseriesException
+from .models import ConfigurationException, SeriesbutlerException
 from .models import configuration_schema
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ def _get_working_directory(working_directory):
 
 
 def _get_config_path(working_directory):
-    return os.path.join(working_directory, 'pyseries.json')
+    return os.path.join(working_directory, 'seriesbutler.json')
 
 
 def init(working_directory):
@@ -82,8 +82,8 @@ def init(working_directory):
 
 def remove_series(configuration, series_configuration):
     if series_configuration not in configuration['series']:
-        raise PyseriesException('The given series is not registered in the '
-                                'given configuration!')
+        raise SeriesbutlerException('The given series is not registered in the'
+                                    ' given configuration!')
 
     # Remove the directory that contains all series
     series_directory = os.path.join(configuration['working_directory'],
@@ -100,8 +100,8 @@ def add_series(configuration, series):
     # Check if the given series is already registered
     for existing in configuration['series']:
         if existing['imdb'] == series['imdb']:
-            raise PyseriesException('Series with imdbid {0} is already '
-                                    'registered!'.format(series['imdb']))
+            raise SeriesbutlerException('Series with imdbid {0} is already '
+                                        'registered!'.format(series['imdb']))
 
     # Add series to the configuration and save it
     configuration['series'].append(series)
@@ -121,8 +121,8 @@ def fetch_all(configuration, link_providers, datasource):
 
 def fetch_series(configuration, series, link_providers, datasource):
     if series not in configuration['series']:
-        raise PyseriesException('The given series is not registered in the '
-                                'given configuration!')
+        raise SeriesbutlerException('The given series is not registered in the'
+                                    ' given configuration!')
     episodes = datasource.episodes_for_series(series)
 
     # Remove watched episodes

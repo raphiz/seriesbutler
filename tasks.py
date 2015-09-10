@@ -12,7 +12,7 @@ def test(debug=False):
     if debug:
         flags = '-s -v'
 
-    run('py.test {0} --pep8 --cov=pyseries --cov-report=term-missing tests/'
+    run('py.test {0} --pep8 --cov=seriesbutler --cov-report=term-missing tests/'
         .format(flags))
 
 
@@ -25,7 +25,7 @@ def clean():
     run('find . -name .coverage -delete')
     run('rm -rf dist/')
     run('rm -rf .cache/')
-    run('rm -rf pyseries.egg-info')
+    run('rm -rf seriesbutler.egg-info')
     run('rm -rf build/')
     log.info('cleaned up')
 

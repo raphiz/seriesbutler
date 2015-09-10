@@ -1,7 +1,7 @@
 # coding: utf-8
 import click
 from . import __version__ as version
-import pyseries.functions as fn
+from . import functions as fn
 from .providers import Solarmovie, WatchTvSeries
 from .datasources import TheTvDb
 
@@ -28,12 +28,12 @@ def cli(ctx, working_directory, log_level):
             configuration = fn.load_configuration(working_directory)
         except FileNotFoundError:
             raise click.ClickException('No configuration found! Please call'
-                                       ' "pyseries init" first!')
+                                       ' "seriesbutler init" first!')
 
 
 @cli.command(name='list')
 def list_series():
-    """List all series managed by pyseries"""
+    """List all series managed by seriesbutler"""
     for series in configuration['series']:
         click.echo(series['name'])
 
@@ -47,7 +47,7 @@ def fetch():
 @cli.command()
 @click.pass_context
 def init(ctx):
-    """Initializes a directory to work with pyseries"""
+    """Initializes a directory to work with seriesbutler"""
     fn.init(ctx.meta['working_directory'])
 
 

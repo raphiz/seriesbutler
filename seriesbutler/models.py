@@ -2,15 +2,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PyseriesException(Exception):
+class SeriesbutlerException(Exception):
     pass
 
 
-class ConfigurationException(PyseriesException):
+class ConfigurationException(SeriesbutlerException):
     pass
 
 
-class DataSourceException(PyseriesException):
+class DataSourceException(SeriesbutlerException):
     pass
 
 

@@ -1,5 +1,6 @@
-from pyseries import functions
-from pyseries.models import PyseriesException, ConfigurationException, Link
+from seriesbutler import functions
+from seriesbutler.models import SeriesbutlerException
+from seriesbutler.models import ConfigurationException, Link
 from unittest.mock import MagicMock
 import pytest
 import os
@@ -8,6 +9,7 @@ import os
 def test_init():
     # TODO! (also cli test!)
     pass
+
 
 def test_load_configuration_invalid_cfg():
     with pytest.raises(ConfigurationException) as exceptionInfo:
@@ -47,7 +49,7 @@ def test_load_configuration_happy_path():
 
     # Asset dynamic properties
     assert cfg['working_directory'].endswith('tests/data/examples/valid')
-    assert cfg['config_path'].endswith('data/examples/valid/pyseries.json')
+    assert cfg['config_path'].endswith('examples/valid/seriesbutler.json')
 
 
 @pytest.fixture
@@ -58,7 +60,7 @@ def config(tmpdir):
             "prefered": []
         },
         "working_directory": tmpdir.strpath,
-        "config_path": tmpdir.join('pyseries.json').strpath,
+        "config_path": tmpdir.join('seriesbutler.json').strpath,
         "series": []
     }
 
@@ -98,7 +100,7 @@ def test_save_configuration_happy_path(config):
 
 
 def test_remove_series_with_non_existing_series(series, config):
-    with pytest.raises(PyseriesException) as exceptionInfo:
+    with pytest.raises(SeriesbutlerException) as exceptionInfo:
         functions.remove_series(config, series)
 
     assert (str(exceptionInfo.value) == 'The given series is not registered '
@@ -127,7 +129,7 @@ def test_remove_series_happy_path(series, config):
 
 def test_add_series_series_already_exists(config, series):
     config['series'].append(series)
-    with pytest.raises(PyseriesException) as exceptionInfo:
+    with pytest.raises(SeriesbutlerException) as exceptionInfo:
         functions.add_series(config, series)
 
     assert (str(exceptionInfo.value) == 'Series with imdbid tt2467372 is '
@@ -161,7 +163,7 @@ def test_fetch_all_called_with_invalid_series_cfg(monkeypatch, config, series):
 
 
 def test_fetch_all_happy_path(mocker, config, series):
-    mocker.patch('pyseries.functions.fetch_series')
+    mocker.patch('seriesbutler.functions.fetch_series')
     config['series'].append(series)
     functions.fetch_all(config, [], None)
 
@@ -170,7 +172,7 @@ def test_fetch_all_happy_path(mocker, config, series):
 
 
 def test_fetch_series_series_not_in_cfg(config, series):
-    with pytest.raises(PyseriesException) as exceptionInfo:
+    with pytest.raises(SeriesbutlerException) as exceptionInfo:
         functions.fetch_series(config, series, [], None)
 
     assert (str(exceptionInfo.value) == 'The given series is not registered '
@@ -184,7 +186,7 @@ def test_fetch_series_no_links_found(mocker, config, series):
     mock_datasource.episodes_for_series.return_value = [(1, 1), (1, 2), (1, 3),
                                                         (1, 4), (1, 5), (1, 6)]
     # Patch the logger
-    mocker.patch('pyseries.functions.logger.error')
+    mocker.patch('seriesbutler.functions.logger.error')
 
     functions.fetch_series(config, series, [], mock_datasource)
 
@@ -208,11 +210,11 @@ def test_fetch_series_download_fails(mocker, config, series):
     mock_provider.links_for.return_value = [Link('U', 'P', lambda x: '://'+x)]
 
     # Patch the download method
-    mocker.patch('pyseries.functions.download')
+    mocker.patch('seriesbutler.functions.download')
     functions.download.return_value = False
 
     # Patch the logger
-    mocker.patch('pyseries.functions.logger.error')
+    mocker.patch('seriesbutler.functions.logger.error')
 
     # Call the fetch method
     functions.fetch_series(config, series, [mock_provider], mock_datasource)
@@ -237,7 +239,7 @@ def test_fetch_series_happy_path(mocker, config, series):
     mock_provider.links_for.return_value = [Link('U', 'P', lambda x: '://'+x)]
 
     # Patch the download method
-    mocker.patch('pyseries.functions.download')
+    mocker.patch('seriesbutler.functions.download')
     functions.download.return_value = True
 
     # Call the fetch method
@@ -250,8 +252,6 @@ def test_fetch_series_happy_path(mocker, config, series):
     # Verify that the start_from value has been updated
     assert config['series'][0]['start_from']['episode'] == 5
     assert config['series'][0]['start_from']['season'] == 1
-
-
 
 
 # Tests for download

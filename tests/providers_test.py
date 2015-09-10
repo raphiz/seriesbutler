@@ -1,10 +1,12 @@
-from pyseries.providers import Solarmovie, WatchTvSeries
-from pyseries.datasources import TheTvDb
+from seriesbutler.providers import Solarmovie, WatchTvSeries
+from seriesbutler.datasources import TheTvDb
 from vcr import VCR
 import responses
 import pytest
+import os
 
-vcr = VCR(cassette_library_dir='build/cassettes/datasources/')
+vcr = VCR(cassette_library_dir=os.path.join(
+    os.getcwd(), 'build/cassettes/datasources/'))
 
 
 @pytest.mark.parametrize("provider", [Solarmovie(), WatchTvSeries()])

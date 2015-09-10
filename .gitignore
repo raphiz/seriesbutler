@@ -1,6 +1,6 @@
 /build/
 /dist/
-/pyseries.egg-info/
+/seriesbutler.egg-info/
 /.coverage
 /tests/examples/HouseOfCards/*.mp4
 /info.log

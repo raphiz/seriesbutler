@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from pyseries import cli
+from seriesbutler import cli
 import pytest
 import shutil
 import json
@@ -13,8 +13,8 @@ vcr = VCR(cassette_library_dir=os.path.join(
 @pytest.fixture
 def fakedir(monkeypatch, tmpdir):
     # Add example config...
-    shutil.copyfile('tests/data/examples/valid/pyseries.json',
-                    tmpdir.join('pyseries.json').strpath)
+    shutil.copyfile('tests/data/examples/valid/seriesbutler.json',
+                    tmpdir.join('seriesbutler.json').strpath)
     tmpdir.join('Brooklyn Nine-Nine').mkdir()
 
     # Change the working directory
@@ -30,11 +30,13 @@ def test_list_series(fakedir):
 
     assert result.output == 'Brooklyn Nine-Nine\n'
 
+
 # TODO
 def test_list_invalid_directory(tmpdir):
     runner = CliRunner()
     result = runner.invoke(cli.cli, ['list'])
     print(result)
+
 
 # TODO
 def test_init_empty_directory(tmpdir):
@@ -69,7 +71,7 @@ The season of the last seen episode: 4
 The the last seen episode number: 2
 Added series Breaking Bad
 '''
-    config = json.loads(fakedir.join('pyseries.json').read())
+    config = json.loads(fakedir.join('seriesbutler.json').read())
     assert len(config['series']) == 2
     assert config['series'][1]['name'] == 'Breaking Bad'
     assert config['series'][1]['imdb'] == 'tt0903747'
@@ -91,7 +93,7 @@ Enter the number of the series to remove: 0
 Series Brooklyn Nine-Nine removed!
 '''
     assert not fakedir.join('Brooklyn Nine-Nine').exists()
-    config = json.loads(fakedir.join('pyseries.json').read())
+    config = json.loads(fakedir.join('seriesbutler.json').read())
     assert len(config['series']) == 0
 
     result = runner.invoke(cli.cli, ['remove'])
