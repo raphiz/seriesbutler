@@ -1,6 +1,6 @@
 requests==2.7.0
-beautifulsoup4==4.3.2
+beautifulsoup4==4.4.0
 configobj==5.0.6
-youtube_dl==2015.05.20
+youtube_dl==2015.09.09
 jsonschema==2.5.1
 click==5.1
