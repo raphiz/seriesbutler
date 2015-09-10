@@ -13,7 +13,7 @@ def test(debug=False):
         flags = '-s -v'
 
     run('py.test {0} --pep8 --cov=seriesbutler --cov-report=term-missing'
-        'tests/'.format(flags))
+        ' tests/'.format(flags))
 
 
 @task
