@@ -13,6 +13,14 @@ seriesbutler fetch
 Downloading TV Series may not be legal in your country of residence - please check with your local laws before installing!
 The author of this software does not take ANY responsibility for what you do with it!
 
+## Installation
+Seriesbutler can be installed using pip. Note that Seriesbutler only supports Python 3.4!
+
+```
+sudo pip3 install seriesbutler
+```
+
+
 ## Usage
 Before using Seriesbutler you should create a new directory in which the series are managed.
 
