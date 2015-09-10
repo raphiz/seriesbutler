@@ -11,9 +11,10 @@ setup(
     packages=['seriesbutler'],
     author="Raphael Zimmermann",
     author_email="dev@raphael.li",
-    url="https://bitbucket.com/raphizim/seriesbutler",
+    url="https://github.com/raphiz/seriesbutler",
     description="Grab your favourite TV shows",
-    long_description=open('./README.md').read(),
+    long_description=("For more information, please checkout the `Github Page "
+                      "<https://github.com/raphiz/seriesbutler>`_."),
     license="MIT",
     platforms=["Linux", "BSD", "MacOS"],
     include_package_data=True,
