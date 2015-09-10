@@ -1,4 +1,5 @@
 # Seriesbutler 1.0.0-dev
+[![Build Status](https://travis-ci.org/raphiz/seriesbutler.svg)](https://travis-ci.org/raphiz/seriesbutler)
 
 Download your favorite TV shows just by running one simple command.
 
