@@ -31,7 +31,7 @@ def clean():
 
 
 @task
-def release(push_tags=False):
+def release(push_tags=True):
     # Are you sure to release?
     try:
         input("Is everything commited? Are you ready to release? "
@@ -41,7 +41,7 @@ def release(push_tags=False):
         exit()
 
     run('bumpversion --message "Release version {new_version}" release')
-    run('python setup.py sdist bdist_wheel')
+    run('python setup.py sdist bdist_wheel upload')
     run('bumpversion --message "Preparing next version {new_version}" '
         '--no-tag minor')
 
