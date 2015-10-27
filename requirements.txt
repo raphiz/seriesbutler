@@ -1,5 +1,5 @@
-requests==2.7.0
-beautifulsoup4==4.4.0
+requests==2.8.*
+beautifulsoup4==4.4.*
 configobj==5.0.6
 youtube_dl
 jsonschema==2.5.1
