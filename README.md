@@ -1,4 +1,4 @@
-# Seriesbutler 1.2.1-dev
+# Seriesbutler 1.2.1
 [![Build Status](https://travis-ci.org/raphiz/seriesbutler.svg)](https://travis-ci.org/raphiz/seriesbutler)
 [![codecov.io](https://codecov.io/github/raphiz/seriesbutler/coverage.svg?branch=master)](https://codecov.io/github/raphiz/seriesbutler?branch=master)
 [![Dependency Status](https://www.versioneye.com/user/projects/55f17d5ad4d2040019000060/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f17d5ad4d2040019000060)

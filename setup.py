@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="seriesbutler",
-    version="1.2.1-dev",
+    version="1.2.1",
     packages=['seriesbutler'],
     author="Raphael Zimmermann",
     author_email="dev@raphael.li",
