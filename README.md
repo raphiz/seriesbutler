@@ -22,6 +22,10 @@ sudo pip3 install seriesbutler
 
 
 ## Usage
+Why should you use seriesbutler? There are two major reasons: You want your homeserver to
+grab the series for you - so that they are ready for you to watch when you want to or you just
+want to use the command line - instead of clicking all the ads away.
+
 Before using Seriesbutler you should create a new directory in which the series are managed.
 
 ```bash
