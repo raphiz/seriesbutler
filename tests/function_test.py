@@ -247,7 +247,7 @@ def test_fetch_series_happy_path(mocker, config, series):
 
     # Verify the download method was called properly
     functions.download.assert_called_once_with('://U', os.path.join(
-        config['working_directory'], series['name']), 's1e5')
+        config['working_directory'], series['name']), 's01e05')
 
     # Verify that the start_from value has been updated
     assert config['series'][0]['start_from']['episode'] == 5

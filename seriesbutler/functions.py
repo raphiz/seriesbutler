@@ -144,7 +144,7 @@ def fetch_series(configuration, series, link_providers, datasource):
                 link.direct(),
                 os.path.join(configuration['working_directory'],
                              series['name']),
-                's{0}e{1}'.format(episode[0], episode[1]))
+                's{0}e{1}'.format(str(episode[0]).zfill(2), str(episode[1]).zfill(2)))
             if succeeded:
                 # Update start from & save it
                 series['start_from']['season'] = episode[0]
