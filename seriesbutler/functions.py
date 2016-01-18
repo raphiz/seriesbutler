@@ -184,11 +184,7 @@ def download(direct, series_directory, filename, user_ydl_opts):
         ydl_opts.update(user_ydl_opts)
         with _pushd(series_directory):
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(direct, False)
-                if info.get("quality") is not None:
-                    print("Quality %s - %s" % (info.get("quality"), direct))
-                return False
-                # ydl.download([direct])
+                ydl.download([direct])
 
         return True
 
@@ -234,16 +230,24 @@ def _links_for_episode(episode, series, configuration, link_providers):
         if not _in_hoster(link.hoster,
            configuration['hosters']['ignored']):
             others.append(link)
+    preferred.sort(key=lambda x: _hoster_index(x.hoster, configuration['hosters']['preferred']))
     logger.info("Found {0} preferred links for {1} s{2}e{3}"
                 .format(len(preferred), series['name'], episode[0], episode[1]))
     return preferred + others
 
 
-def _in_hoster(link_hoster, list):
-    for declared_hoster in list:
+def _in_hoster(link_hoster, hoster_list):
+    for declared_hoster in hoster_list:
         if link_hoster.startswith(declared_hoster):
             return True
     return False
+
+
+def _hoster_index(link_hoster, hoster_list):
+    for idx in range(0, len(hoster_list)):
+        if link_hoster.startswith(hoster_list[idx]):
+            return idx
+    return -1
 
 
 def _has_suitable_extractor(url):
