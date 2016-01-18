@@ -42,7 +42,7 @@ def test_load_configuration_happy_path():
 
     # Assert loaded values (some samples)
     assert len(cfg['hosters']['ignored']) == 1
-    assert len(cfg['hosters']['prefered']) == 1
+    assert len(cfg['hosters']['preferred']) == 1
     assert cfg['series'][0]['imdb'] == 'tt2467372'
     assert cfg['series'][0]['name'] == 'Brooklyn Nine-Nine'
     assert cfg['series'][0]['tvdb'] == '269586'
@@ -57,7 +57,7 @@ def config(tmpdir):
     return {
         "hosters": {
             "ignored": [],
-            "prefered": []
+            "preferred": []
         },
         "working_directory": tmpdir.strpath,
         "config_path": tmpdir.join('seriesbutler.json').strpath,

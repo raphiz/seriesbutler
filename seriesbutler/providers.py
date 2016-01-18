@@ -3,7 +3,8 @@ import requests
 import re
 from .models import Link
 import logging
-
+from urllib.parse import urlparse, parse_qs
+import base64
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +33,11 @@ class WatchTvSeries(object):
         return result
 
     def unwrap(self, link):
+        query_string = parse_qs(urlparse(link).query)
+        if 'r' in query_string.keys() and len(query_string['r']) == 1:
+            encoded = query_string['r'][0]
+            return base64.b64decode(encoded).decode('unicode-escape')
+
         response = requests.get(link)
         if not response.ok:
             logger.error("Failed to unwrap link {0} (Server error)!"
@@ -39,12 +45,38 @@ class WatchTvSeries(object):
             return None
 
         soup = BeautifulSoup(response.text, "html.parser")
-        return soup.select('.myButton')[0]['href']
+        return soup.select('.push_button.blue')[0]['href']
+
+
+class PutlockerSeries(object):
+
+    base = 'http://putlocker-series.com'
+
+    def links_for(self, series, season, episode):
+        result = []
+        name_in_url = series['name'].replace(' ', '_')
+        response = requests.get(
+            "{0}/episode/{1}/{2}/{3}"
+            .format(self.base, name_in_url, season, episode))
+
+        if not response.ok:
+            logger.warn("putlocker-series.com has no links for {0} s{1}e{2}!"
+                        .format(series['name'], season, episode))
+            return result
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        p = re.compile('href=\"(.*?)\"')
+        for element in soup.select('ul.host-ul > li a.host-a.wrap'):
+            link = re.search(p, element['data-src']).group(1)
+            hoster = element.span.string.strip()
+            result.append(Link(link, hoster, lambda x: x))
+        return result
 
 
 class Solarmovie(object):
 
-    base = 'https://www.solarmovie.is'
+    base = 'https://www.solarmovie.ph'
 
     def links_for(self, series, season, episode):
         result = []

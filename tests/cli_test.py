@@ -49,7 +49,6 @@ def test_list_series(fakedir):
 def test_add_series_nothing_found(fakedir):
     runner = CliRunner()
     result = runner.invoke(cli.cli, ['add'], input='lksjlakjsdl\n')
-    print(result.exception)
     assert result.output == '''What's the title of the TV seris to add?: lksjlakjsdl
 No results found!\n'''
     assert not fakedir.join('lksjlakjsdl').exists()

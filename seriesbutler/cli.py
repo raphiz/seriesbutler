@@ -4,12 +4,12 @@ import logging
 from . import __version__ as version
 from . import functions as fn
 from .models import SeriesbutlerException
-from .providers import Solarmovie, WatchTvSeries
+from .providers import Solarmovie, WatchTvSeries, PutlockerSeries
 from .datasources import TheTvDb
 
 
 # Define, which link providers and datasources shall be used
-link_providers = [Solarmovie(), WatchTvSeries()]
+link_providers = [Solarmovie(), WatchTvSeries(), PutlockerSeries()]
 datasource = TheTvDb()
 configuration = None
 
@@ -28,6 +28,8 @@ def cli(ctx, working_directory, log_level):
         global configuration
         try:
             configuration = fn.load_configuration(working_directory)
+        except SeriesbutlerException as e:
+            raise click.ClickException(str(e))
         except FileNotFoundError:
             raise click.ClickException('No configuration found! Please call'
                                        ' "seriesbutler init" first!')

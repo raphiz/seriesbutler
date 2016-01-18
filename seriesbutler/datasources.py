@@ -23,7 +23,7 @@ class TheTvDb(object):
             '{base}GetSeries.php?seriesname={name}', name=name))
 
         if not response.ok:
-            logger.error("Status code {0} ({1})!".format(
+            logger.warn("Status code {0} ({1})!".format(
                 response.status_code, response.url))
             raise DataSourceException("Failed search by name (server error)")
 

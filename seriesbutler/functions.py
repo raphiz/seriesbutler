@@ -80,7 +80,7 @@ def init(working_directory):
     configuration = {
         'working_directory': working_directory,
         'config_path': config_path,
-        "hosters": {"ignored": [], "prefered": []},
+        "hosters": {"ignored": [], "preferred": []},
         'series': []
     }
 
@@ -176,7 +176,6 @@ def download(direct, series_directory, filename, user_ydl_opts):
                 'No suitable extractor forund for url {0}'.format(direct)
             )
             return False
-
         logger.info("Downloading from ... {0}".format(direct))
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -185,7 +184,11 @@ def download(direct, series_directory, filename, user_ydl_opts):
         ydl_opts.update(user_ydl_opts)
         with _pushd(series_directory):
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([direct])
+                info = ydl.extract_info(direct, False)
+                if info.get("quality") is not None:
+                    print("Quality %s - %s" % (info.get("quality"), direct))
+                return False
+                # ydl.download([direct])
 
         return True
 
@@ -219,21 +222,21 @@ def _links_for_episode(episode, series, configuration, link_providers):
     for provider in link_providers:
         links += provider.links_for(series, episode[0], episode[1])
 
-    #  Sort them so that the prefered ones are on top
-    prefered = []
+    #  Sort them so that the preferred ones are on top
+    preferred = []
     others = []
 
     for link in links:
         if _in_hoster(link.hoster,
-           configuration['hosters']['prefered']):
-            prefered.append(link)
+           configuration['hosters']['preferred']):
+            preferred.append(link)
             continue
         if not _in_hoster(link.hoster,
            configuration['hosters']['ignored']):
             others.append(link)
-    logger.info("Found {0} prefered links for {1} s{2}e{3}"
-                .format(len(prefered), series['name'], episode[0], episode[1]))
-    return prefered + others
+    logger.info("Found {0} preferred links for {1} s{2}e{3}"
+                .format(len(preferred), series['name'], episode[0], episode[1]))
+    return preferred + others
 
 
 def _in_hoster(link_hoster, list):

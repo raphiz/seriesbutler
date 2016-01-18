@@ -36,14 +36,14 @@ configuration_schema = {
                         "type": "string"
                     }
                 },
-                "prefered": {
+                "preferred": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 }
             },
-            "required": ["prefered", "ignored"],
+            "required": ["preferred", "ignored"],
             "additionalProperties": False
         },
         "series": {
@@ -77,10 +77,10 @@ configuration_schema = {
                 "required": ["imdb", "name", "start_from"],
                 "additionalProperties": True
             }
+        },
+        "ydl_options": {
+            "type": "object"
         }
-    },
-    "ydl_options": {
-        "type": "object"
     },
     "required": ["hosters", "series"],
     "additionalProperties": False
