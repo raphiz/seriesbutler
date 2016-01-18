@@ -66,7 +66,7 @@ You can manually modify the Seriesbutler configuration - it's a simple plain JSO
 
 The full [JSON Schema](http://json-schema.org/) can be found [here](https://github.com/raphiz/seriesbutler/blob/master/seriesbutler/models.py#L27)
 
-#### hosters
+#### hosters (required)
 Some hosters might have a terrible video quality while others are fast and good. This
 option allows you to specify preferred hosters, which will instruct Seriesbutler to look for
 give preference to the links of this hoster.
@@ -94,7 +94,7 @@ The order in which the preferred links are checked is the same as declared here.
 }
 ```
 
-#### series
+#### series (required)
 The series array contains zero or more TV series elements which Seriesbutler will keep
 track of. Use the command line option `seriesbutler add` and `seriesbutler remove`
 instead of manually edit this option - it's much simpler!
@@ -114,8 +114,22 @@ instead of manually edit this option - it's much simpler!
 }
 ```
 
-#### ydl_options
-This is the most flexible - but most complecated option
+#### ydl_options (optional)
+This is the most flexible - but most complicated option. It allows you to directly pass
+options to [youtube-dl](https://rg3.github.io/youtube-dl/) - as if you were using its API
+directly. This is very useful if you prefer a certain format or want to use an alternative downloader etc.
+
+Checkout the [youtube-dl README](https://github.com/rg3/youtube-dl/blob/master/README.md) for all supported options.
+
+```json
+{
+    "ydl_options" : {
+        "recodevideo" : "mp4",
+        "external_downloader": "axel",
+        "external_downloader_args": ["-a"]
+    }
+}
+```
 
 ## Supported Sites
 Seriesbutler fetches links from the following sites:
