@@ -79,6 +79,9 @@ configuration_schema = {
             }
         }
     },
+    "ydl_options": {
+        "type": "object"
+    },
     "required": ["hosters", "series"],
     "additionalProperties": False
 }

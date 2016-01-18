@@ -144,7 +144,8 @@ def fetch_series(configuration, series, link_providers, datasource):
                 link.direct(),
                 os.path.join(configuration['working_directory'],
                              series['name']),
-                's{0:02d}e{1:02d}'.format(episode[0], episode[1]))
+                's{0:02d}e{1:02d}'.format(episode[0], episode[1]),
+                configuration.get('ydl_options', {}))
             if succeeded:
                 # Update start from & save it
                 series['start_from']['season'] = episode[0]
@@ -163,7 +164,7 @@ def fetch_series(configuration, series, link_providers, datasource):
                              series['name'], episode[0], episode[1]))
 
 
-def download(direct, series_directory, filename):
+def download(direct, series_directory, filename, user_ydl_opts):
     """
     Download the given url into a file called filename.ext where ext is the
     extension of the videos file format.
@@ -181,6 +182,7 @@ def download(direct, series_directory, filename):
             'format': 'bestaudio/best',
             'outtmpl': filename + '.%(ext)s'
         }
+        ydl_opts.update(user_ydl_opts)
         with _pushd(series_directory):
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([direct])

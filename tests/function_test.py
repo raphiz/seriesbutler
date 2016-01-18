@@ -247,11 +247,24 @@ def test_fetch_series_happy_path(mocker, config, series):
 
     # Verify the download method was called properly
     functions.download.assert_called_once_with('://U', os.path.join(
-        config['working_directory'], series['name']), 's01e05')
+        config['working_directory'], series['name']), 's01e05', {})
 
     # Verify that the start_from value has been updated
     assert config['series'][0]['start_from']['episode'] == 5
     assert config['series'][0]['start_from']['season'] == 1
+
+
+def test_pass_ydl_options(mocker, config, series):
+    mocker.patch('seriesbutler.functions.youtube_dl.YoutubeDL')
+
+    functions.download("https://youtu.be/2Z4m4lnjxkY", "/tmp", "filename", {
+        'external_downloader': 'axel'
+    })
+    functions.youtube_dl.YoutubeDL.assert_called_once_with({
+        'format': 'bestaudio/best',
+        'outtmpl': 'filename.%(ext)s',
+        'external_downloader': 'axel'
+    })
 
 
 # TODO Tests for download
