@@ -96,7 +96,7 @@ def test_save_configuration_with_invalid_cfg(monkeypatch, config):
 
 def test_save_configuration_happy_path(config):
     functions.save_configuration(config)
-    assert len(open(config['config_path']).read()) == 90
+    assert len(open(config['config_path']).read()) == 91
 
 
 def test_remove_series_with_non_existing_series(series, config):
@@ -124,7 +124,7 @@ def test_remove_series_happy_path(series, config):
     functions.remove_series(config, series)
 
     assert len(config['series']) == 0
-    assert len(open(config['config_path']).read()) == 90
+    assert len(open(config['config_path']).read()) == 91
 
 
 def test_add_series_series_already_exists(config, series):
@@ -153,7 +153,7 @@ def test_add_series_happy_path(config, series):
     assert os.path.exists(os.path.join(config['working_directory'],
                           series['name']))
 
-    assert len(open(config['config_path']).read()) == 290
+    assert len(open(config['config_path']).read()) == 291
 
 
 def test_fetch_all_called_with_invalid_series_cfg(monkeypatch, config, series):

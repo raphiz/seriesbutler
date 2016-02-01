@@ -25,7 +25,7 @@ def test_links_for_invalid_episode(provider):
     assert len(provider.links_for(series, 9, 9)) == 0
 
 
-@pytest.mark.parametrize("provider", [Solarmovie(), WatchTvSeries()
+@pytest.mark.parametrize("provider", [Solarmovie(), WatchTvSeries(),
                          PutlockerSeries()])
 @vcr.use_cassette(record_mode='new_episodes')
 def test_links_happy_path(provider):
