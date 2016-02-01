@@ -4,6 +4,10 @@ import shutil
 import youtube_dl
 import logging
 import logging.config
+from multiprocessing import Process
+import time
+import tempfile
+import subprocess
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from contextlib import contextmanager
@@ -140,12 +144,17 @@ def fetch_series(configuration, series, link_providers, datasource):
         # Try to download the links - they are already sorted
         for link in _links_for_episode(episode, series, configuration,
                                        link_providers):
+            direct = link.direct()
+            user_ydl_opts = configuration.get('ydl_options', {})
+            # Download a sample....
+            # get_sample(direct, user_ydl_opts)
+
             succeeded = download(
-                link.direct(),
+                direct,
                 os.path.join(configuration['working_directory'],
                              series['name']),
                 's{0:02d}e{1:02d}'.format(episode[0], episode[1]),
-                configuration.get('ydl_options', {}))
+                user_ydl_opts)
             if succeeded:
                 # Update start from & save it
                 series['start_from']['season'] = episode[0]
@@ -164,7 +173,40 @@ def fetch_series(configuration, series, link_providers, datasource):
                              series['name'], episode[0], episode[1]))
 
 
-def download(direct, series_directory, filename, user_ydl_opts):
+def get_sample(direct, user_ydl_opts, max_filesize=5*1024*1024):
+    user_ydl_opts = user_ydl_opts.copy()
+    user_ydl_opts['nopart'] = True
+    temp_dir = tempfile.mkdtemp(prefix='seriesbutler-')
+    t = Process(target=download, args=(direct, temp_dir, 'sample', user_ydl_opts, False))
+    sample_file = os.path.join(temp_dir, 'sample')
+    t.start()
+
+    while(t.is_alive() and (probe(sample_file) is None) and
+          (not os.path.exists(sample_file) or
+           os.stat(sample_file).st_size < max_filesize)):
+        time.sleep(1)
+    if not t.is_alive():
+        return False
+    t.terminate()
+    return probe(sample_file)
+
+
+def probe(sample_file):
+    if not os.path.exists(sample_file):
+        return None
+
+    cmnd = ['/usr/bin/ffprobe', '-print_format', 'json', '-v', 'quiet',
+            '-show_streams', sample_file]
+    p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, _ = p.communicate()
+    try:
+        data = json.loads(out.decode("utf-8"))
+        return data['streams'][0]['width'], data['streams'][0]['height']
+    except Exception as e:
+        return None
+
+
+def download(direct, series_directory, filename, user_ydl_opts, with_extension=True):
     """
     Download the given url into a file called filename.ext where ext is the
     extension of the videos file format.
@@ -179,7 +221,7 @@ def download(direct, series_directory, filename, user_ydl_opts):
         logger.info("Downloading from ... {0}".format(direct))
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': filename + '.%(ext)s'
+            'outtmpl': filename + '.%(ext)s' if with_extension else filename
         }
         ydl_opts.update(user_ydl_opts)
         with _pushd(series_directory):
