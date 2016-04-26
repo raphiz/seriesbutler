@@ -73,10 +73,10 @@ def test_solarmovie_links_suggest_network_error():
     (Solarmovie(), 'https://www.solarmovie.ph/link/play/4967257/',
         'http://vodlocker.com/cnmg1ihv0765'),
     (Solarmovie(), 'http://www.solarmovie.ph/link/play/5018874/',
-        'http://www.thevideo.me/61mbhoxagcny'),
-    (WatchTvSeries(), 'http://thewatchseries.to/open/cale/1758021.html',
-        'http://daclips.in/iq999atdu5qk'),
-    (WatchTvSeries(), 'http://thewatchseries.to/cale.html?'
+        'http://www.thevideo.me/embed-61mbhoxagcny.html'),
+    (WatchTvSeries(), 'http://watchseries.ag/open/cale/1758021.html',
+        'http://www.wholecloud.net/video/a2708f4e9333f'),
+    (WatchTvSeries(), 'http://watchseries.ag/cale.html?'
         'r=aHR0cDovL2dvcmlsbGF2aWQuaW4veHZmZ2NhOGpjenI2',
         'http://gorillavid.in/xvfgca8jczr6')
 
@@ -89,7 +89,7 @@ def test_unwrap(provider, link, expected):
 @responses.activate
 @pytest.mark.parametrize("provider, link", [
     (Solarmovie(), "https://www.solarmovie.ph/link/play/4967257/"),
-    (WatchTvSeries(), "http://thewatchseries.to/open/cale/1758021.html")
+    (WatchTvSeries(), "http://watchseries.ag/open/cale/1758021.html")
 ])
 def test_unwrap_network_error(provider, link):
     # Prepare fake server error response

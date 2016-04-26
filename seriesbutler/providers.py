@@ -12,6 +12,11 @@ class WatchTvSeries(object):
 
     base = 'http://watchseries.ag'
 
+    def accept(self, series):
+        return (series['source']['standard'] == 'imdb' or
+                series['source']['provider'] == 'thetvdb' or
+                series['source']['id'][:2] == '2')
+
     def links_for(self, series, season, episode):
         result = []
 
@@ -45,7 +50,7 @@ class WatchTvSeries(object):
             return None
 
         soup = BeautifulSoup(response.text, "html.parser")
-        return soup.select('.push_button.blue')[0]['href']
+        return soup.select('.myButton.p2')[0]['href']
 
 
 class PutlockerSeries(object):
@@ -112,16 +117,23 @@ class Solarmovie(object):
                          .format(link))
             return None
 
-        soup = BeautifulSoup(response.text, "html.parser")
-        direct = soup.select('iframe')[0]['src']
-
-        # Special handling for embedded...
-        match = re.fullmatch(
-            '(http|https)\:\/\/([^\/]*)\/embed-([^-]*)-[0-9]*x[0-9]*.html',
-            direct)
-        if match:
-            return '{0}://{1}/{2}'.format(*match.groups())
-        return direct
+        try:
+            soup = BeautifulSoup(response.text, "html.parser")
+            if len(soup.select('iframe')) > 0:
+                direct = soup.select('iframe')[0]['src']
+            elif len(soup.select('a[target=_blank]')) > 0:
+                direct = soup.select('a[target=_blank]')[0]['href']
+            # Special handling for embedded...
+            match = re.fullmatch(
+                '(http|https)\:\/\/([^\/]*)\/embed-([^-]*)-[0-9]*x[0-9]*.html',
+                direct)
+            if match:
+                return '{0}://{1}/{2}'.format(*match.groups())
+            return direct
+        except:
+            logger.error("Failed to unwrap link {0} -  trying generic extractor!"
+                         .format(link))
+            return link
 
     def _uniqe_name(self, imdb_id):
         response = requests.get(
