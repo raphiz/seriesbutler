@@ -1,3 +1,4 @@
+# DISCONTINUED!
 # Seriesbutler 1.3.0-dev
 [![Build Status](https://travis-ci.org/raphiz/seriesbutler.svg)](https://travis-ci.org/raphiz/seriesbutler)
 [![codecov.io](https://codecov.io/github/raphiz/seriesbutler/coverage.svg?branch=master)](https://codecov.io/github/raphiz/seriesbutler?branch=master)
